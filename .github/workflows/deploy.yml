@@ -15,19 +15,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Write SSH key
+      - name: Debug HOME
+        shell: bash
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+          echo "HOME=$HOME"
+          pwd
+          whoami
+
+      - name: Write SSH key
+        shell: bash
+        run: |
+          set -e
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+          cat > "$HOME/.ssh/id_ed25519" <<'KEYEOF'
+          ${{ secrets.DEPLOY_SSH_KEY }}
+          KEYEOF
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
 
       - name: Deploy over SSH
+        shell: bash
         run: |
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" << 'EOF'
+          ssh -i "$HOME/.ssh/id_ed25519" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'EOFSSH'
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
             cd "${{ secrets.DEPLOY_PATH }}"
             docker compose pull
             docker compose up -d
             docker image prune -f
-          EOF
+          EOFSSH
