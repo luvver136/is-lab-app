@@ -28,9 +28,7 @@ jobs:
           set -e
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
-          cat > "$HOME/.ssh/id_ed25519" <<'KEYEOF'
-          ${{ secrets.DEPLOY_SSH_KEY }}
-          KEYEOF
+          echo "${{ secrets.DEPLOY_SSH_KEY_B64 }}" | base64 -d > "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/id_ed25519"
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> "$HOME/.ssh/known_hosts"
           chmod 644 "$HOME/.ssh/known_hosts"
