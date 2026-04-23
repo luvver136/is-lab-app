@@ -10,4 +10,10 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
   </ItemGroup>
 
+<ItemGroup>
+  <Compile Remove="IsLabApp.Tests/**/*.cs" />
+  <None Remove="IsLabApp.Tests/**/*.cs" />
+  <Content Remove="IsLabApp.Tests/**/*.cs" />
+</ItemGroup>
+
 </Project>
